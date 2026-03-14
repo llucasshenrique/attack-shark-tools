@@ -1,6 +1,6 @@
 #!/bin/sh
 # install.sh - Instala o CLI e a extensão GNOME para Attack Shark X11
-# Pré-requisitos: bun ou node/npm (para instalar dependências), acesso ao diretório ~/.local/share,
+# Pré-requisitos: bun (obrigatório), acesso ao diretório ~/.local/share,
 # (opcional) gnome-extensions para habilitar a extensão automaticamente.
 # Este script é idempotente: pode ser executado várias vezes sem efeitos colaterais indesejados.
 
@@ -11,32 +11,21 @@ warn() { printf "[WARN] %s\n" "$*"; }
 err() { printf "[ERROR] %s\n" "$*" 1>&2; }
 
 # Detectar runner: bun preferido, fallback para npm (requer node)
-RUNNER=""
+# Bun é obrigatório
 if command -v bun >/dev/null 2>&1; then
-  RUNNER="bun"
-  INSTALL_CMD="bun install"
-elif command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-  RUNNER="npm"
-  INSTALL_CMD="npm install --no-audit --no-fund"
+  INSTALL_CMD="bun install --frozen-lockfile"
 else
-  err "Nem 'bun' nem 'node/npm' encontrados. Instale bun ou node/npm e rode este script novamente."
+  err "'bun' não encontrado. Instale bun e rode este script novamente: https://bun.sh"
   exit 2
 fi
 
-info "Usando runner: $RUNNER"
+info "Usando runner: bun"
 
 # Instalar dependências (idempotente)
 info "Instalando dependências com: $INSTALL_CMD"
-if [ "$RUNNER" = "bun" ]; then
-  if ! bun install; then
-    err "Falha ao executar 'bun install'. Verifique sua instalação do bun."
-    exit 3
-  fi
-else
-  if ! npm install --no-audit --no-fund; then
-    err "Falha ao executar 'npm install'. Verifique sua instalação do npm."
-    exit 4
-  fi
+if ! bun install --frozen-lockfile; then
+  err "Falha ao executar 'bun install'. Verifique sua instalação do bun."
+  exit 3
 fi
 
 # Criar shim executável em ./bin/asx11-cli
@@ -46,18 +35,11 @@ info "Criando shim do CLI em $SHIM"
 mkdir -p "$BIN_DIR"
 cat > "$SHIM" <<'SHIMEOF'
 #!/bin/sh
-# Shim gerado por install.sh. Decide em tempo de execução entre bun e node.
+# Shim gerado por install.sh. Requer bun em tempo de execução.
 if command -v bun >/dev/null 2>&1; then
   exec bun run -- ./cli/index.ts "$@"
-elif command -v node >/dev/null 2>&1; then
-  # Se houver um build para JS, tentamos executar; caso contrário, instruímos o usuário.
-  if [ -f "./cli/index.js" ]; then
-    exec node ./cli/index.js "$@"
-  else
-    exec node -e 'console.error("Nenhum bun encontrado e não existe ./cli/index.js. Rode com bun ou construa o JS."); process.exit(127)'
-  fi
 else
-  echo "Nenhum runtime (bun ou node) disponível." 1>&2
+  echo "'bun' não encontrado em PATH. Instale bun: https://bun.sh" 1>&2
   exit 127
 fi
 SHIMEOF

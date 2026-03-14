@@ -6,9 +6,11 @@ Breve CLI para integrar o driver comunitário do Attack Shark com uma extensão 
 
 Pré-requisitos
 
-- Bun ou Node.js (com npx/ts-node).
+- Bun (recomendado) ou Node.js (com npx/ts-node).
 - gnome-extensions (para habilitar/desabilitar extensões).
 - Acesso de escrita a ~/.local/share para instalar a extensão localmente.
+
+Nota: os workflows de CI e release do repositório utilizam `bun` para instalar dependências, executar testes e empacotar/publicar pacotes.
 
 Instalação rápida
 
@@ -18,17 +20,33 @@ Recomendado (script):
 ./install.sh
 ```
 
-Alternativa manual:
+Alternativa manual (com Bun):
 
 ```bash
 # instalar dependências do projeto
-bun install        # ou
-npm install
+bun install
 
 # adicionar dependência do driver (GitHub)
 bun add github:HarukaYamamoto0/attack-shark-x11-driver
-# alternativa npm
+```
+
+Alternativa manual (com npm):
+
+```bash
+# instalar dependências com npm
+npm install
+
+# adicionar dependência do driver (GitHub)
 npm install github:HarukaYamamoto0/attack-shark-x11-driver
+```
+
+Instalação do Bun
+
+```bash
+# instalação rápida (Linux/macOS) - oficial
+curl -fsSL https://bun.sh/install | bash
+
+# ou use distribuíções / gerenciadores de pacotes quando disponíveis
 ```
 
 Aplicar regras udev
@@ -71,6 +89,17 @@ npx ts-node ./cli/index.ts battery
 npx ts-node ./cli/index.ts dpi 1600
 npx ts-node ./cli/index.ts polling 500
 ```
+
+CI / Release
+
+Os workflows do GitHub Actions foram atualizados para usar `bun` em vez de `npm`:
+
+- Instalação em CI: `bun install --frozen-lockfile`
+- Testes e scripts: `bun run <script>`
+- Empacotamento: `bun pack`
+- Publicação: `bun publish` (utiliza `NPM_TOKEN` para autenticação quando presente)
+
+Se o seu ambiente de desenvolvimento ainda usa `npm`, os comandos equivalentes continuam documentados acima, mas recomenda-se migrar para Bun para reproduzir o ambiente do CI localmente.
 
 Como testar a extensão após a instalação
 

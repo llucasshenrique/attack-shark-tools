@@ -1,21 +1,14 @@
 import { type StageIndex, AttackSharkX11, ConnectionMode, Rate, DpiBuilder } from 'attack-shark-x11-driver/src';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
+import { silentLogger } from './logger';
 
-const isBun = typeof (globalThis as any).Bun !== 'undefined' || !!process.env.BUN_ENV;
-
-// Silent logger that writes to stderr for diagnostics so stdout remains clean JSON
-const silentLogger = {
-  debug: (...args: any[]) => console.error('[debug]', ...args),
-  info: (...args: any[]) => console.error('[info]', ...args),
-  warn: (...args: any[]) => console.error('[warn]', ...args),
-  error: (...args: any[]) => console.error('[error]', ...args),
-};
+const isBun = (globalThis as any).Bun !== 'undefined' || !!process.env.BUN_ENV;
 
 const writeJson = (obj: any) => {
   try {
     process.stdout.write(JSON.stringify(obj) + '\n');
   } catch (e) {
-    process.stdout.write(JSON.stringify({ error: 'Internal serialization error' }) + '\n');
+    process.stdout.write(JSON.stringify({ error: 'Internal serialization error', details: String(e) }) + '\n');
   }
 };
 
