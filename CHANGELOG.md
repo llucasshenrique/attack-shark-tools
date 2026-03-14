@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.1] - 2026-03-14
+## [0.1.2] - 2026-03-14
 ### Added
 - Automatic packaged extension installation via `scripts/install-extension.sh` in `postpackage`.
 - Documentation for `bun run package` build+install flow.
