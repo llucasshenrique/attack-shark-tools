@@ -20,6 +20,17 @@ Recomendado (script):
 ./install.sh
 ```
 
+Fluxo empacotado (build + instalação da extensão local):
+
+```bash
+bun run package
+```
+
+Esse comando gera os artefatos em `dist/` e, no hook `postpackage`, executa
+`scripts/install-extension.sh` para instalar `dist/extension` em
+`~/.local/share/gnome-shell/extensions/attack-shark-x11@llucasshenrique`
+(ou `${XDG_DATA_HOME}/gnome-shell/extensions/...` quando definido).
+
 Alternativa manual (com Bun):
 
 ```bash

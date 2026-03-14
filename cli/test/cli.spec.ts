@@ -1,4 +1,4 @@
-import { mock, describe, test, expect, beforeEach, afterEach, vi, spyOn } from 'bun:test';
+import { mock, describe, test, expect, beforeEach, afterEach, vi } from 'bun:test';
 import { main as cliMain } from '../index';
 
 // Mocks
@@ -51,14 +51,35 @@ describe('CLI', () => {
     expect(outputs.some(o => o.includes('"level":42'))).toBeTruthy();
   });
 
-  test('dpi invalid stage', async () => {
+  test('dpi invalid input', async () => {
     process.argv = ['node', 'index.ts', 'dpi', 'abc'];
     await cliMain();
-    expect(outputs.some(o => o.includes('DPI stage must be between'))).toBeTruthy();
+    expect(outputs.some(o => o.includes('Invalid DPI input'))).toBeTruthy();
+  });
+
+  test('dpi accepts direct dpi value and maps to stage', async () => {
+    process.argv = ['node', 'index.ts', 'dpi', '1600'];
+    await cliMain();
+    expect((mockDriver.setDpi as any).mock.calls.length).toBe(1);
+    expect(outputs.some(o => o.includes('"ok":true'))).toBeTruthy();
+  });
+
+  test('dpi accepts highest configured value', async () => {
+    process.argv = ['node', 'index.ts', 'dpi', '22000'];
+    await cliMain();
+    expect((mockDriver.setDpi as any).mock.calls.length).toBe(1);
+    expect(outputs.some(o => o.includes('"ok":true'))).toBeTruthy();
   });
 
   test('polling sets rate', async () => {
     process.argv = ['node', 'index.ts', 'polling', '500'];
+    await cliMain();
+    expect((mockDriver.setPollingRate as any).mock.calls.length).toBe(1);
+    expect(outputs.some(o => o.includes('"ok":true'))).toBeTruthy();
+  });
+
+  test('polling accepts 250hz', async () => {
+    process.argv = ['node', 'index.ts', 'polling', '250'];
     await cliMain();
     expect((mockDriver.setPollingRate as any).mock.calls.length).toBe(1);
     expect(outputs.some(o => o.includes('"ok":true'))).toBeTruthy();

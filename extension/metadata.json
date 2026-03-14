@@ -2,6 +2,6 @@
   "name": "Attack Shark X11 Integration",
   "description": "Battery indicator and configuration controller for the Attack Shark X11 mouse.",
   "uuid": "attack-shark-x11@llucasshenrique",
-  "shell-version": ["45", "46", "47"],
+  "shell-version": ["45", "46", "47", "48", "49"],
   "url": "https://github.com/llucasshenrique/attack-shark-gnome-integration"
 }
