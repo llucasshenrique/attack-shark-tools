@@ -12,6 +12,11 @@ on:
         description: 'Tag to release (overrides push tag)'
         required: true
 
+concurrency:
+  # Prevent race conditions between push(tag) and release events for the same version.
+  group: release-${{ github.event.release.tag_name || github.ref_name || github.event.inputs.tag || github.sha }}
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Release
