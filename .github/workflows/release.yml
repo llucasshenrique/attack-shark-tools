@@ -10,7 +10,7 @@ on:
     inputs:
       tag:
         description: 'Tag to release (overrides push tag)'
-        required: false
+        required: true
 
 jobs:
   release:
@@ -51,17 +51,108 @@ jobs:
           bun run copy-cli || true
           ls -la dist || true
 
-      - name: Zip extension artifact
+      - name: Prepare and zip release artifacts
         run: |
-          cd dist
-          zip -r attack-shark-extension-${{ github.ref_name || github.event.inputs.tag || 'release' }}.zip extension
-          ls -la *.zip
+          set -euo pipefail
 
-      - name: Upload extension ZIP via gh
+          RELEASE_TAG=${{ github.ref_name || github.event.inputs.tag || 'release' }}
+          EXT_UUID=$(bun -e "const meta = JSON.parse(await Bun.file('extension/metadata.json').text()); console.log(meta.uuid)")
+
+          # Extension package: folder name must match GNOME extension UUID.
+          mv "dist/extension" "dist/${EXT_UUID}"
+          cp cli/udev/99-attack-shark.rules "dist/${EXT_UUID}/99-attack-shark.rules"
+
+          cat > "dist/${EXT_UUID}/INSTALL.md" <<'EOF'
+          # Instalar a extensao do GNOME
+
+          ## 1) Copiar a pasta da extensao
+
+          Copie a pasta (nomeada com o UUID) para:
+
+          - `~/.local/share/gnome-shell/extensions/`
+
+          Exemplo:
+
+          ```bash
+          cp -r attack-shark-x11@llucasshenrique ~/.local/share/gnome-shell/extensions/
+          ```
+
+          ## 2) Aplicar regra udev
+
+          O arquivo `99-attack-shark.rules` esta incluido neste pacote.
+
+          ```bash
+          sudo cp 99-attack-shark.rules /etc/udev/rules.d/
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger
+          ```
+
+          ## 3) Habilitar a extensao
+
+          ```bash
+          gnome-extensions enable attack-shark-x11@llucasshenrique
+          ```
+
+          ## 4) Recarregar o GNOME Shell
+
+          - Wayland: faca logout/login.
+          - X11: `Alt+F2`, digite `r`, pressione Enter.
+          EOF
+
+          (
+            cd dist
+            zip -r "attack-shark-extension-${RELEASE_TAG}.zip" "${EXT_UUID}"
+          )
+
+          # Pure CLI package: binary + ESM + udev rules.
+          mkdir -p dist/cli
+          cp dist/attack-shark-cli dist/cli/attack-shark-cli
+          cp dist/attack-shark-cli.mjs dist/cli/attack-shark-cli.mjs
+          cp cli/udev/99-attack-shark.rules dist/cli/99-attack-shark.rules
+
+          cat > dist/cli/INSTALL.md <<'EOF'
+          # Instalar a CLI pura
+
+          ## 1) Instalar o binario
+
+          ```bash
+          sudo cp attack-shark-cli /usr/local/bin/
+          sudo chmod +x /usr/local/bin/attack-shark-cli
+          ```
+
+          ## 2) Aplicar regra udev
+
+          O arquivo `99-attack-shark.rules` esta incluido neste pacote.
+
+          ```bash
+          sudo cp 99-attack-shark.rules /etc/udev/rules.d/
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger
+          ```
+
+          ## 3) Uso basico
+
+          ```bash
+          attack-shark-cli battery
+          attack-shark-cli dpi 1600
+          attack-shark-cli polling 500
+          ```
+
+          Opcional: `attack-shark-cli.mjs` para uso como modulo ESM.
+          EOF
+
+          (
+            cd dist
+            zip -r "attack-shark-cli-${RELEASE_TAG}.zip" cli
+            ls -la *.zip
+          )
+
+      - name: Upload release ZIPs via gh
         run: |
           TAG=${{ github.event.release.tag_name || github.ref_name || github.event.inputs.tag }}
-          ASSET=./dist/attack-shark-extension-${{ github.ref_name || github.event.inputs.tag || 'release' }}.zip
-          echo "Uploading $ASSET to release $TAG"
-          gh release upload "$TAG" "$ASSET" --clobber
+          EXT_ASSET=./dist/attack-shark-extension-${{ github.ref_name || github.event.inputs.tag || 'release' }}.zip
+          CLI_ASSET=./dist/attack-shark-cli-${{ github.ref_name || github.event.inputs.tag || 'release' }}.zip
+          echo "Uploading $EXT_ASSET and $CLI_ASSET to release $TAG"
+          gh release upload "$TAG" "$EXT_ASSET" "$CLI_ASSET" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
