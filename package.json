@@ -1,0 +1,21 @@
+{
+  "name": "cli",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "battery": "bun run cli/index.ts battery",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "attack-shark-x11-driver": "github:HarukaYamamoto0/attack-shark-x11-driver"
+  }
+}
