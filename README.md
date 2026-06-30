@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/llucasshenrique/attack-shark-gnome-integration/actions/workflows/ci.yml/badge.svg)](https://github.com/llucasshenrique/attack-shark-gnome-integration/actions/workflows/ci.yml)
 [![Release](https://github.com/llucasshenrique/attack-shark-gnome-integration/actions/workflows/release.yml/badge.svg)](https://github.com/llucasshenrique/attack-shark-gnome-integration/actions/workflows/release.yml)
-[![GNOME 45-49](https://img.shields.io/badge/GNOME-45--49-4A86CF?logo=gnome&logoColor=white)](extension/metadata.json)
+[![GNOME 45-50](https://img.shields.io/badge/GNOME-45--50-4A86CF?logo=gnome&logoColor=white)](extension/metadata.json)
 [![Bun](https://img.shields.io/badge/Bun-required-F9F1E1?logo=bun&logoColor=000)](https://bun.sh)
 [![Linux Packages](https://img.shields.io/badge/packages-deb%20%7C%20rpm-2ea44f)](scripts/package-deb.sh)
 
